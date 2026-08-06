@@ -1,0 +1,1 @@
+-keep,allowobfuscation,allowshrinking class com.u1145h.kavitaandroid.feature.library.LibraryViewModel
