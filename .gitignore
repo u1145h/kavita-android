@@ -29,6 +29,9 @@ captures/
 *.iws
 out/
 
+# VS Code
+.vscode/
+
 # Kotlin
 .kotlin/
 
