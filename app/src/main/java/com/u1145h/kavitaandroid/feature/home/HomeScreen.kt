@@ -14,12 +14,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,11 +29,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.u1145h.kavitaandroid.ui.components.OfflineScreen
+import com.u1145h.kavitaandroid.ui.components.ServerSetupScreen
 
 /**
  * The embedded Kavita web interface. Never looks like a browser — no URL bar,
  * no scrollbars, zoom disabled. The system back button walks the web view
- * history and only exits when there is no history.
+ * history and only exits when there is no history. On first run (no saved
+ * server address) shows [ServerSetupScreen] instead.
  */
 @Composable
 fun HomeScreen(
@@ -46,6 +44,7 @@ fun HomeScreen(
     val viewModel: HomeViewModel = hiltViewModel()
     val serverUrl by viewModel.serverUrl.collectAsStateWithLifecycle()
     val bodyColor by viewModel.bridge.bodyColor.collectAsStateWithLifecycle()
+    val setupState by viewModel.setupState.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
     val activity = context as? Activity
@@ -53,9 +52,6 @@ fun HomeScreen(
     var isLoading by rememberSaveable { mutableStateOf(true) }
     var isOffline by rememberSaveable { mutableStateOf(false) }
     var webView by remember { mutableStateOf<WebView?>(null) }
-
-    var showUrlDialog by rememberSaveable { mutableStateOf(false) }
-    var serverUrlText by rememberSaveable { mutableStateOf(serverUrl) }
 
     var pendingFileCallback by remember { mutableStateOf<ValueCallback<Array<Uri>>?>(null) }
     val fileLauncher = rememberLauncherForActivityResult(
@@ -75,6 +71,10 @@ fun HomeScreen(
         }
 
     BackHandler {
+        if (serverUrl.isBlank()) {
+            activity?.finish()
+            return@BackHandler
+        }
         val wv = webView
         if (wv != null && wv.canGoBack()) {
             wv.goBack()
@@ -104,61 +104,42 @@ fun HomeScreen(
                 .statusBarsPadding()
                 .navigationBarsPadding(),
         ) {
-            KavitaWebView(
-                url = serverUrl,
-                bridge = viewModel.bridge,
-                modifier = Modifier.fillMaxSize(),
-                onWebViewReady = { webView = it },
-                onLoadingChanged = { isLoading = it },
-                onOfflineChanged = { isOffline = it },
-                onShowFileChooser = onShowFileChooser,
-            )
-
-            if (isLoading) {
-                LinearProgressIndicator(
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .fillMaxWidth(),
-                    color = MaterialTheme.colorScheme.primary,
+            if (serverUrl.isBlank()) {
+                ServerSetupScreen(
+                    state = setupState,
+                    onConnect = viewModel::submitServerUrl,
+                    modifier = Modifier.fillMaxSize(),
                 )
-            }
-
-            if (isOffline) {
-                OfflineScreen(
+            } else {
+                KavitaWebView(
                     url = serverUrl,
-                    onRetry = {
-                        isOffline = false
-                        webView?.reload()
-                    },
-                    onEditUrl = { showUrlDialog = true },
+                    bridge = viewModel.bridge,
+                    modifier = Modifier.fillMaxSize(),
+                    onWebViewReady = { webView = it },
+                    onLoadingChanged = { isLoading = it },
+                    onOfflineChanged = { isOffline = it },
+                    onShowFileChooser = onShowFileChooser,
                 )
+
+                if (isLoading) {
+                    LinearProgressIndicator(
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .fillMaxWidth(),
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+
+                if (isOffline) {
+                    OfflineScreen(
+                        url = serverUrl,
+                        onRetry = {
+                            isOffline = false
+                            webView?.reload()
+                        },
+                    )
+                }
             }
         }
-    }
-
-    if (showUrlDialog) {
-        AlertDialog(
-            onDismissRequest = { showUrlDialog = false },
-            title = { Text("Server URL") },
-            text = {
-                OutlinedTextField(
-                    value = serverUrlText,
-                    onValueChange = { serverUrlText = it },
-                    label = { Text("http://host:port") },
-                    singleLine = true,
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.setServerUrl(serverUrlText)
-                    showUrlDialog = false
-                    isOffline = false
-                    webView?.reload()
-                }) { Text("Save") }
-            },
-            dismissButton = {
-                TextButton(onClick = { showUrlDialog = false }) { Text("Cancel") }
-            },
-        )
     }
 }

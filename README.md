@@ -3,7 +3,7 @@
 A minimal, distraction-free Android client for [Kavita](https://github.com/Kareadita/Kavita). Instead of a native UI, the app embeds the Kavita web interface in a full-screen `WebView` — no browser chrome, no bottom navigation, no built-in reader or offline downloads. Just the Kavita server, filling the screen.
 
 <p align="center">
-  <img src="screenshot/screenshot.png" alt="Kavita for Android" width="300">
+  <img src="screenshot/screenshot.png" alt="Kavita for Android" width="80%">
 </p>
 
 ## Features
@@ -12,7 +12,7 @@ A minimal, distraction-free Android client for [Kavita](https://github.com/Karea
 - **True black bars** — the status and navigation bars are painted pitch black to match the app's dark-only theme.
 - **Seamless appearance** — the bars blend into the page by matching the web UI's body background color.
 - **Offline detection** — shows a friendly "Can't reach your server" screen when the host is unreachable, with retry.
-- **Change server** — the server URL can be edited from the offline screen (persisted via DataStore).
+- **First-run setup** — on first launch you enter your server address; the app verifies it's reachable before continuing. There is no in-app way to change the server later (clear app data to set it up again).
 - **Session bridge** — a small JS bridge captures the Kavita auth token from the web UI so authenticated requests work out of the box.
 - **System back button** — walks the web view history first, and only exits the app when there's no history left.
 - **File picker support** — file-upload dialogs from the web UI are handled natively.
@@ -41,13 +41,7 @@ The debug APK is written to `app/build/outputs/apk/debug/`.
 
 ## Configuration
 
-The initial server URL defaults to a LAN address in `app/src/main/java/com/u1145h/kavitaandroid/core/config/ServerConfig.kt`:
-
-```kotlin
-const val DEFAULT_SERVER_URL = "http://<your-server>:3005"
-```
-
-Once the app is running, the URL can be changed anytime from the **Change server** button on the offline screen. To make it reachable from a phone, the server should listen on your LAN or a public address (HTTP is allowed via `network_security_config.xml`).
+On first launch, the app shows a setup screen where you enter your Kavita server address. The address is verified against the server's health endpoint before it is saved. To point the app at a different server, clear the app's data and reopen it — there is no in-app option to change it.
 
 ## Project structure
 
@@ -73,8 +67,7 @@ app/src/main/java/com/u1145h/kavitaandroid/
 - **Retrofit / OkHttp** + **kotlinx.serialization** for the API layer
 - **Room** for local persistence
 - **Coil** for image loading
-- **WorkManager** and **Navigation** wired in for future native features
 
 ## License
 
-This project is a third-party, unofficial client and is not affiliated with the Kavita project. Kavita is distributed under its own license. Add your own license file to this repository before publishing.
+This project is a third-party, unofficial client and is not affiliated with the Kavita project. Kavita is distributed under its own license. This project is released under the [MIT License](LICENSE).

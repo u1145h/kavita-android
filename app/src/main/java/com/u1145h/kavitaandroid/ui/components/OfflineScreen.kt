@@ -2,20 +2,16 @@ package com.u1145h.kavitaandroid.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CloudOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -31,7 +27,6 @@ import androidx.compose.ui.unit.dp
 fun OfflineScreen(
     url: String,
     onRetry: () -> Unit,
-    onEditUrl: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -60,14 +55,8 @@ fun OfflineScreen(
             textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(24.dp))
-        Row {
-            Button(onClick = onRetry) {
-                Text("Retry")
-            }
-            Spacer(Modifier.width(12.dp))
-            OutlinedButton(onClick = onEditUrl) {
-                Text("Change server")
-            }
+        Button(onClick = onRetry) {
+            Text("Retry")
         }
     }
 }

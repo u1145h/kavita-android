@@ -1,6 +1,5 @@
 package com.u1145h.kavitaandroid.data.repository
 
-import com.u1145h.kavitaandroid.core.config.ServerConfig
 import com.u1145h.kavitaandroid.data.local.datastore.AppSettings
 import com.u1145h.kavitaandroid.data.local.datastore.Session
 import com.u1145h.kavitaandroid.data.local.datastore.SessionDataStore
@@ -30,7 +29,7 @@ class SettingsRepository @Inject constructor(
 
     val settings: Flow<AppSettings> = settingsDataStore.settings
 
-    private val _serverUrl = MutableStateFlow(ServerConfig.DEFAULT_SERVER_URL)
+    private val _serverUrl = MutableStateFlow("")
     val serverUrl: StateFlow<String> = _serverUrl
 
     val session: Flow<Session> = sessionDataStore.session

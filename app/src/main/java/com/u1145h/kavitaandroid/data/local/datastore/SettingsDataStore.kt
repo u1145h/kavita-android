@@ -6,7 +6,6 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
-import com.u1145h.kavitaandroid.core.config.ServerConfig
 import com.u1145h.kavitaandroid.domain.model.ThemeMode
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
@@ -35,7 +34,7 @@ class SettingsDataStore @Inject constructor(
         .catch { emit(emptyPreferences()) }
         .map { prefs ->
             AppSettings(
-                serverUrl = prefs[keyServerUrl] ?: ServerConfig.DEFAULT_SERVER_URL,
+                serverUrl = prefs[keyServerUrl] ?: "",
                 themeMode = prefs[keyThemeMode]
                     ?.let { runCatching { ThemeMode.valueOf(it) }.getOrNull() }
                     ?: ThemeMode.SYSTEM,
@@ -72,7 +71,7 @@ class SettingsDataStore @Inject constructor(
 }
 
 data class AppSettings(
-    val serverUrl: String = ServerConfig.DEFAULT_SERVER_URL,
+    val serverUrl: String = "",
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val dynamicColor: Boolean = true,
     val developerMode: Boolean = false,

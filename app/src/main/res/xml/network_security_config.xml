@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Cleartext (HTTP) is permitted ONLY for the local Kavita server so the app
-    can talk to it over the LAN while everything else stays HTTPS-only.
+    Cleartext (HTTP) traffic is allowed so the app can talk to any self-hosted
+    Kavita server over the LAN, which typically runs plain HTTP. HTTPS servers
+    work too.
 -->
 <network-security-config>
-    <base-config cleartextTrafficPermitted="false" />
-    <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">100.122.11.42</domain>
-    </domain-config>
+    <base-config cleartextTrafficPermitted="true" />
 </network-security-config>

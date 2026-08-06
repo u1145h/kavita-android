@@ -7,6 +7,9 @@ build/
 local.properties
 keystore.properties
 
+# Personal notes (never shared)
+TODO.md
+
 # Android
 *.apk
 *.aab
