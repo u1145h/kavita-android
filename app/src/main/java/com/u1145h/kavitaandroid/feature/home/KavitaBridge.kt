@@ -2,7 +2,6 @@ package com.u1145h.kavitaandroid.feature.home
 
 import android.util.Log
 import com.u1145h.kavitaandroid.data.local.datastore.Session
-import com.u1145h.kavitaandroid.data.remote.DownloadCoordinator
 import com.u1145h.kavitaandroid.data.remote.auth.SessionManager
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -19,14 +18,12 @@ import kotlinx.serialization.json.jsonPrimitive
 
 /**
  * Native side of the WebView bridge (`window.KavitaAndroid`). Receives the
- * Kavita auth token captured from the web UI and routes book downloads to
- * [DownloadCoordinator]. Also tracks the webpage body color so the status and
- * navigation bars can be painted to match it.
+ * Kavita auth token captured from the web UI and tracks the webpage body color
+ * so the status and navigation bars can be painted to match it.
  */
 @Singleton
 class KavitaBridge @Inject constructor(
     private val sessionManager: SessionManager,
-    private val downloadCoordinator: DownloadCoordinator,
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -59,14 +56,6 @@ class KavitaBridge @Inject constructor(
                     )
                 }
             }.onFailure { Log.w("KavitaBridge", "Bad session payload", it) }
-        }
-    }
-
-    @android.webkit.JavascriptInterface
-    fun download(url: String, filename: String, mimeType: String) {
-        scope.launch {
-            runCatching { downloadCoordinator.enqueue(url, filename, mimeType) }
-                .onFailure { Log.w("KavitaBridge", "Download enqueue failed", it) }
         }
     }
 

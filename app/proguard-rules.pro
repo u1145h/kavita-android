@@ -22,7 +22,7 @@
 }
 
 # WebView JS interface
--keepclassmembers class com.u1145h.kavitaandroid.feature.home.webview.KavitaBridge {
+-keepclassmembers class com.u1145h.kavitaandroid.feature.home.KavitaBridge {
     public *;
 }
 

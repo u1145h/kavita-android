@@ -7,39 +7,6 @@ object KavitaJs {
     const val OBJECT_NAME = "KavitaAndroid"
 
     /**
-     * Injected at DOCUMENT_START: exposes download interception so native
-     * DownloadManager handles `/api/Download/` requests instead of the WebView
-     * rendering raw binary.
-     */
-    const val INIT = """
-        (function() {
-            if (window.KavitaAndroid) {
-                var api = window.KavitaAndroid;
-                var realFetch = window.fetch;
-                window.fetch = function(url, opts) {
-                    var u = (typeof url === 'string') ? url : ((url && url.url) || String(url));
-                    if (u.indexOf('/api/Download/') !== -1) {
-                        api.download(u, '', '');
-                        return Promise.resolve(new Response(null, { status: 200, statusText: 'OK' }));
-                    }
-                    return realFetch.apply(this, arguments);
-                };
-                var realOpen = XMLHttpRequest.prototype.open;
-                XMLHttpRequest.prototype.open = function(method, url) {
-                    var u = String(url);
-                    if (u.indexOf('/api/Download/') !== -1) {
-                        var self = this;
-                        api.download(u, '', '');
-                        setTimeout(function() { try { self.abort(); } catch (e) {} }, 0);
-                        return;
-                    }
-                    return realOpen.apply(this, arguments);
-                };
-            }
-        })();
-    """
-
-    /**
      * Evaluated after each page load: polls for the Kavita auth token and
      * reports it to the native side so OkHttp-backed sync can authenticate.
      *

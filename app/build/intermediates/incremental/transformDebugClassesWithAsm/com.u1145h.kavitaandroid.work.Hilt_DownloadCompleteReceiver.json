@@ -1,1 +1,0 @@
-{"className":"com.u1145h.kavitaandroid.work.Hilt_DownloadCompleteReceiver","classAnnotations":["dagger.hilt.android.internal.OnReceiveBytecodeInjectionMarker"],"interfaces":[],"superClasses":["android.content.BroadcastReceiver","java.lang.Object"]}

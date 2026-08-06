@@ -19,20 +19,16 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
-import java.io.ByteArrayInputStream
 
 /**
  * The embedded Kavita web interface, configured to never look like a browser:
  * JS/DOM storage enabled, zoom/overscroll/scrollbars disabled, single window.
- * Intercepts `/api/Download/` requests and routes them to [KavitaBridge] so
- * books land in the native offline library instead of the web view.
  */
 @Composable
 fun KavitaWebView(
     url: String,
     bridge: KavitaBridge,
     modifier: Modifier = Modifier,
-    reloadTrigger: Int = 0,
     onWebViewReady: (WebView) -> Unit = {},
     onLoadingChanged: (Boolean) -> Unit = {},
     onOfflineChanged: (Boolean) -> Unit = {},
@@ -82,22 +78,6 @@ fun KavitaWebView(
                     onOfflineChanged(true)
                 }
             }
-
-            override fun shouldInterceptRequest(
-                view: WebView?,
-                request: WebResourceRequest?,
-            ): WebResourceResponse? {
-                val u = request?.url?.toString().orEmpty()
-                if (u.contains("/api/Download/")) {
-                    bridge.download(u, "", "")
-                    return WebResourceResponse(
-                        "application/octet-stream",
-                        "utf-8",
-                        ByteArrayInputStream(ByteArray(0)),
-                    )
-                }
-                return super.shouldInterceptRequest(view, request)
-            }
         }
     }
 
@@ -143,7 +123,6 @@ fun KavitaWebView(
                 addJavascriptInterface(bridge, KavitaJs.OBJECT_NAME)
                 CookieManager.getInstance().setAcceptCookie(true)
                 CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
-                evaluateJavascript(KavitaJs.INIT, null)
                 webViewRef[0] = this
                 onWebViewReady(this)
                 loadUrl(url)
@@ -158,9 +137,5 @@ fun KavitaWebView(
 
     LaunchedEffect(url) {
         if (url.isNotEmpty()) webViewRef[0]?.loadUrl(url)
-    }
-
-    LaunchedEffect(reloadTrigger) {
-        if (reloadTrigger > 0) webViewRef[0]?.reload()
     }
 }

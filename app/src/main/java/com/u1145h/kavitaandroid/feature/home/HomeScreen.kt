@@ -12,9 +12,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,15 +35,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.u1145h.kavitaandroid.ui.components.OfflineScreen
 
 /**
- * Root screen: the embedded Kavita web interface. Never looks like a browser —
- * no URL bar, no scrollbars, zoom disabled. The system back button walks the
- * web view history and only exits when there is no history.
+ * The embedded Kavita web interface. Never looks like a browser — no URL bar,
+ * no scrollbars, zoom disabled. The system back button walks the web view
+ * history and only exits when there is no history.
  */
 @Composable
 fun HomeScreen(
-    reloadTrigger: Int = 0,
-    onOpenLibrary: () -> Unit,
-    onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val viewModel: HomeViewModel = hiltViewModel()
@@ -51,6 +53,9 @@ fun HomeScreen(
     var isLoading by rememberSaveable { mutableStateOf(true) }
     var isOffline by rememberSaveable { mutableStateOf(false) }
     var webView by remember { mutableStateOf<WebView?>(null) }
+
+    var showUrlDialog by rememberSaveable { mutableStateOf(false) }
+    var serverUrlText by rememberSaveable { mutableStateOf(serverUrl) }
 
     var pendingFileCallback by remember { mutableStateOf<ValueCallback<Array<Uri>>?>(null) }
     val fileLauncher = rememberLauncherForActivityResult(
@@ -88,14 +93,21 @@ fun HomeScreen(
         )
         Box(
             modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .background(Color.Black)
+                .navigationBarsPadding(),
+        )
+        Box(
+            modifier = Modifier
                 .fillMaxSize()
-                .statusBarsPadding(),
+                .statusBarsPadding()
+                .navigationBarsPadding(),
         ) {
             KavitaWebView(
                 url = serverUrl,
                 bridge = viewModel.bridge,
                 modifier = Modifier.fillMaxSize(),
-                reloadTrigger = reloadTrigger,
                 onWebViewReady = { webView = it },
                 onLoadingChanged = { isLoading = it },
                 onOfflineChanged = { isOffline = it },
@@ -118,9 +130,35 @@ fun HomeScreen(
                         isOffline = false
                         webView?.reload()
                     },
-                    onOpenSettings = onOpenSettings,
+                    onEditUrl = { showUrlDialog = true },
                 )
             }
         }
+    }
+
+    if (showUrlDialog) {
+        AlertDialog(
+            onDismissRequest = { showUrlDialog = false },
+            title = { Text("Server URL") },
+            text = {
+                OutlinedTextField(
+                    value = serverUrlText,
+                    onValueChange = { serverUrlText = it },
+                    label = { Text("http://host:port") },
+                    singleLine = true,
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.setServerUrl(serverUrlText)
+                    showUrlDialog = false
+                    isOffline = false
+                    webView?.reload()
+                }) { Text("Save") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showUrlDialog = false }) { Text("Cancel") }
+            },
+        )
     }
 }

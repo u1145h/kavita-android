@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.dp
 fun OfflineScreen(
     url: String,
     onRetry: () -> Unit,
-    onOpenSettings: () -> Unit,
+    onEditUrl: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -65,8 +65,8 @@ fun OfflineScreen(
                 Text("Retry")
             }
             Spacer(Modifier.width(12.dp))
-            OutlinedButton(onClick = onOpenSettings) {
-                Text("Settings")
+            OutlinedButton(onClick = onEditUrl) {
+                Text("Change server")
             }
         }
     }
