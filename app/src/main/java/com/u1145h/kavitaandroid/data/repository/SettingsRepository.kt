@@ -29,17 +29,19 @@ class SettingsRepository @Inject constructor(
 
     val settings: Flow<AppSettings> = settingsDataStore.settings
 
-    private val _serverUrl = MutableStateFlow("")
-    val serverUrl: StateFlow<String> = _serverUrl
+    val serverUrl: Flow<String> = settings
+        .map { it.serverUrl }
+        .distinctUntilChanged()
+
+    @Volatile
+    var currentServerUrl: String = ""
+        private set
 
     val session: Flow<Session> = sessionDataStore.session
 
     init {
         scope.launch {
-            settingsDataStore.settings
-                .map { it.serverUrl }
-                .distinctUntilChanged()
-                .collect { _serverUrl.value = it }
+            serverUrl.collect { currentServerUrl = it }
         }
     }
 

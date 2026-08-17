@@ -9,6 +9,8 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 
@@ -23,6 +25,15 @@ sealed interface SetupState {
 }
 
 /**
+ * Represents the server URL state when the app launches.
+ */
+sealed interface ServerUrlState {
+    data object Loading : ServerUrlState
+    data object Unconfigured : ServerUrlState
+    data class Configured(val url: String) : ServerUrlState
+}
+
+/**
  * Supplies the embedded web UI with its base URL and the native [KavitaBridge].
  * On first run (no saved server URL) drives the setup flow that verifies the
  * address before it is persisted.
@@ -33,7 +44,19 @@ class HomeViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val healthChecker: ServerHealthChecker,
 ) : ViewModel() {
-    val serverUrl: StateFlow<String> = settingsRepository.serverUrl
+    val serverUrlState: StateFlow<ServerUrlState> = settingsRepository.serverUrl
+        .map { url ->
+            if (url.isBlank()) {
+                ServerUrlState.Unconfigured
+            } else {
+                ServerUrlState.Configured(url)
+            }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = kotlinx.coroutines.flow.SharingStarted.Eagerly,
+            initialValue = ServerUrlState.Loading,
+        )
 
     private val _setupState = MutableStateFlow<SetupState>(SetupState.Idle)
     val setupState: StateFlow<SetupState> = _setupState.asStateFlow()

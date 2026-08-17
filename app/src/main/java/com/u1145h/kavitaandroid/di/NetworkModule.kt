@@ -45,7 +45,7 @@ object NetworkModule {
             .connectTimeout(ServerConfig.CONNECT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .readTimeout(ServerConfig.READ_TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .writeTimeout(ServerConfig.WRITE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
-            .addInterceptor(DynamicBaseUrlInterceptor { settingsRepository.serverUrl.value })
+            .addInterceptor(DynamicBaseUrlInterceptor { settingsRepository.currentServerUrl })
             .addInterceptor(AuthInterceptor { sessionManager.token })
 
         if (BuildConfig.DEBUG) {

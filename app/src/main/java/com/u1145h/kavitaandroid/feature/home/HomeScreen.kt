@@ -42,7 +42,7 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
 ) {
     val viewModel: HomeViewModel = hiltViewModel()
-    val serverUrl by viewModel.serverUrl.collectAsStateWithLifecycle()
+    val serverUrlState by viewModel.serverUrlState.collectAsStateWithLifecycle()
     val bodyColor by viewModel.bridge.bodyColor.collectAsStateWithLifecycle()
     val setupState by viewModel.setupState.collectAsStateWithLifecycle()
 
@@ -57,7 +57,7 @@ fun HomeScreen(
     val fileLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenMultipleDocuments(),
     ) { uris ->
-        pendingFileCallback?.onReceiveValue(uris?.toTypedArray())
+        pendingFileCallback?.onReceiveValue(uris.toTypedArray())
         pendingFileCallback = null
     }
 
@@ -70,8 +70,10 @@ fun HomeScreen(
             }
         }
 
+    val currentUrl = (serverUrlState as? ServerUrlState.Configured)?.url ?: ""
+
     BackHandler {
-        if (serverUrl.isBlank()) {
+        if (currentUrl.isBlank()) {
             activity?.finish()
             return@BackHandler
         }
@@ -104,40 +106,46 @@ fun HomeScreen(
                 .statusBarsPadding()
                 .navigationBarsPadding(),
         ) {
-            if (serverUrl.isBlank()) {
-                ServerSetupScreen(
-                    state = setupState,
-                    onConnect = viewModel::submitServerUrl,
-                    modifier = Modifier.fillMaxSize(),
-                )
-            } else {
-                KavitaWebView(
-                    url = serverUrl,
-                    bridge = viewModel.bridge,
-                    modifier = Modifier.fillMaxSize(),
-                    onWebViewReady = { webView = it },
-                    onLoadingChanged = { isLoading = it },
-                    onOfflineChanged = { isOffline = it },
-                    onShowFileChooser = onShowFileChooser,
-                )
-
-                if (isLoading) {
-                    LinearProgressIndicator(
-                        modifier = Modifier
-                            .align(Alignment.TopCenter)
-                            .fillMaxWidth(),
-                        color = MaterialTheme.colorScheme.primary,
+            when (val state = serverUrlState) {
+                is ServerUrlState.Loading -> {
+                    // Waiting for DataStore; render neutral background without flashing setup screen
+                }
+                is ServerUrlState.Unconfigured -> {
+                    ServerSetupScreen(
+                        state = setupState,
+                        onConnect = viewModel::submitServerUrl,
+                        modifier = Modifier.fillMaxSize(),
                     )
                 }
-
-                if (isOffline) {
-                    OfflineScreen(
-                        url = serverUrl,
-                        onRetry = {
-                            isOffline = false
-                            webView?.reload()
-                        },
+                is ServerUrlState.Configured -> {
+                    KavitaWebView(
+                        url = state.url,
+                        bridge = viewModel.bridge,
+                        modifier = Modifier.fillMaxSize(),
+                        onWebViewReady = { webView = it },
+                        onLoadingChanged = { isLoading = it },
+                        onOfflineChanged = { isOffline = it },
+                        onShowFileChooser = onShowFileChooser,
                     )
+
+                    if (isLoading) {
+                        LinearProgressIndicator(
+                            modifier = Modifier
+                                .align(Alignment.TopCenter)
+                                .fillMaxWidth(),
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+
+                    if (isOffline) {
+                        OfflineScreen(
+                            url = state.url,
+                            onRetry = {
+                                isOffline = false
+                                webView?.reload()
+                            },
+                        )
+                    }
                 }
             }
         }
