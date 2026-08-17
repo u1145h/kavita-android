@@ -6,6 +6,12 @@ A minimal, distraction-free Android client for [Kavita](https://github.com/Karea
   <img src="screenshot/screenshot.png" alt="Kavita for Android" width="80%">
 </p>
 
+<p align="center">
+  <a href="https://github.com/u1145h/kavita-android/releases">
+    <img src="https://img.shields.io/github/v/release/u1145h/kavita-android?style=for-the-badge&color=2563EB&logo=github&label=Download%20APK" alt="Download Latest Release">
+  </a>
+</p>
+
 ## Features
 
 - **Full-screen embedded web UI** — the Kavita interface rendered edge-to-edge with zoom, scrollbars and overscroll disabled.
